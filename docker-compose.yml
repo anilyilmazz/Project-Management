@@ -1,0 +1,32 @@
+version: '3'
+services:
+    mongodb:
+      image: mongo
+      restart: always
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongodbdata:/data/db
+      networks:
+        - backend
+
+    web:
+        build: .
+        environment:
+          - PROJECT_ENV=prod
+        ports:
+            - "5000:5000"
+        volumes:
+            - .:/code
+        depends_on:
+          - mongodb
+        networks:
+          - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mongodbdata:
+    driver: local
