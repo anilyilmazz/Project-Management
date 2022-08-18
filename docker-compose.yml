@@ -20,7 +20,33 @@ services:
             - .:/code
         depends_on:
           - mongodb
+          - redis
         networks:
+          - backend
+
+    worker:
+      build: .
+      command: celery -A project_management.tasks.work_check worker --beat --loglevel=INFO --logfile=project_management/tasks/celery.log
+      volumes:
+        - .:/usr/src/app
+      environment:
+        - PROJECT_ENV=prod
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        - SMTP_SERVER=SMTP_SERVER
+        - SENDER_EMAIL=SENDER_EMAIL
+        - SENDER_PASSWORD=SENDER_PASSWORD
+      depends_on:
+        - web
+        - redis
+      networks:
+        - backend
+
+    redis:
+      image: redis:6-alpine
+      ports:
+        - 6379:6379
+      networks:
           - backend
 
 networks:
